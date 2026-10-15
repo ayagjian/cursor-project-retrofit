@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Workmanship Defect Code Summary</title>
+  <style>
+    :root {
+      --bg: #0e1217;
+      --surface: #161c24;
+      --surface-2: #1c2430;
+      --line: #2a3442;
+      --text: #e8eef4;
+      --muted: #93a1b3;
+      --faint: #6d7b8d;
+      --accent: #4c8dff;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+    .page { max-width: 1180px; margin: 0 auto; padding: 32px 28px 64px; }
+    h1 { font-size: 28px; font-weight: 650; letter-spacing: -0.03em; margin: 0 0 6px; }
+    h2 { font-size: 18px; font-weight: 650; margin: 36px 0 8px; }
+    h3 { font-size: 14px; font-weight: 650; margin: 0 0 8px; }
+    p { margin: 0; }
+    .sub { color: var(--muted); font-size: 12px; }
+    .caption { color: var(--faint); font-size: 11px; margin-top: 8px; }
+    header {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      gap: 16px; flex-wrap: wrap; padding-bottom: 20px; border-bottom: 1px solid var(--line);
+    }
+    .filter { display: flex; align-items: center; gap: 8px; }
+    .filter > span { color: var(--muted); font-size: 12px; font-weight: 600; }
+    .site-dd { position: relative; }
+    .site-dd-btn {
+      background: var(--surface-2); color: var(--text); border: 1px solid var(--line);
+      border-radius: 8px; padding: 8px 12px; font-size: 13px; min-width: 240px;
+      text-align: left; cursor: pointer;
+    }
+    .site-dd-menu {
+      position: absolute; right: 0; top: calc(100% + 6px);
+      background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+      padding: 8px; min-width: 280px; z-index: 30;
+    }
+    .site-dd-actions { display: flex; gap: 8px; margin-bottom: 6px; }
+    .site-opt {
+      display: flex; align-items: center; gap: 8px; padding: 6px 8px;
+      border-radius: 6px; font-size: 13px; cursor: pointer;
+    }
+    .site-opt:hover { background: var(--surface-2); }
+    .btn {
+      background: transparent; color: var(--accent); border: 1px solid var(--line);
+      border-radius: 8px; padding: 7px 10px; cursor: pointer; font-size: 12px;
+    }
+    .btn:hover { border-color: var(--accent); }
+    .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0; }
+    .kpi {
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: 12px; padding: 16px 18px;
+    }
+    .kpi b { display: block; font-size: 26px; letter-spacing: -0.03em; }
+    .kpi span { color: var(--muted); font-size: 12px; }
+    .callout {
+      background: #152033; border: 1px solid #27406a; border-radius: 12px;
+      padding: 14px 16px; margin-bottom: 8px;
+    }
+    .callout strong { display: block; margin-bottom: 4px; color: var(--accent); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+    .panel {
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: 12px; padding: 16px;
+    }
+    .hbar { display: flex; flex-direction: column; gap: 7px; }
+    .hbar-row { display: grid; grid-template-columns: 128px 1fr 36px; gap: 8px; align-items: center; }
+    .hbar-row span { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hbar-row b { font-size: 12px; text-align: right; font-weight: 600; }
+    .track { height: 10px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+    .fill { height: 100%; border-radius: 99px; background: var(--accent); }
+    .usage { display: flex; height: 12px; border-radius: 99px; overflow: hidden; background: var(--surface-2); margin-top: 8px; }
+    .usage > i { display: block; height: 100%; }
+    .usage-legend { display: flex; gap: 16px; margin-top: 8px; color: var(--muted); font-size: 12px; }
+    .usage-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
+    .donut-wrap { display: flex; gap: 20px; align-items: center; }
+    .legend { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--muted); }
+    .legend b { color: var(--text); font-weight: 600; }
+    .swatch { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { padding: 7px 8px; border-bottom: 1px solid var(--line); text-align: right; }
+    th { color: var(--faint); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; position: sticky; top: 0; background: var(--surface); }
+    th:first-child, td:first-child { text-align: left; }
+    tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
+    .scroll { max-height: 420px; overflow: auto; border: 1px solid var(--line); border-radius: 12px; }
+    .sigs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .sig p { color: var(--muted); font-size: 13px; }
+    svg.chart { width: 100%; height: auto; display: block; }
+    .stack-legend { display: flex; flex-wrap: wrap; gap: 12px 16px; margin-bottom: 8px; color: var(--muted); font-size: 12px; }
+    @media (max-width: 860px) {
+      .kpis, .grid-2, .sigs { grid-template-columns: 1fr; }
+      .hbar-row { grid-template-columns: 100px 1fr 32px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>Workmanship defect-code summary</h1>
+        <p class="sub">Working_Doc.xlsx · 366 records · Failure Code (col B) · Manufacturer Site (col K)</p>
+      </div>
+      <div class="filter">
+        <span>Sites</span>
+        <div class="site-dd" id="site-dd">
+          <button type="button" class="site-dd-btn" id="site-btn" aria-haspopup="listbox" aria-expanded="false">All sites</button>
+          <div class="site-dd-menu" id="site-menu" hidden>
+            <div class="site-dd-actions">
+              <button type="button" class="btn" id="select-all">Select all</button>
+              <button type="button" class="btn" id="clear">Clear filter</button>
+            </div>
+            <div id="site-options"></div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="kpis" id="kpis"></div>
+    <div class="callout" id="callout"></div>
+
+    <h2>Defect-code mix</h2>
+    <p class="sub" id="mix-sub">Record count by primary failure code across all sites.</p>
+    <div class="panel" style="margin-top:12px">
+      <div class="hbar" id="code-bars"></div>
+      <p class="caption">Axis: defect code vs records. Source: Working_Doc.xlsx.</p>
+    </div>
+
+    <div class="grid-2" style="margin-top:20px">
+      <div class="panel">
+        <h3>Share of records</h3>
+        <div class="donut-wrap">
+          <svg id="donut" width="200" height="200" viewBox="0 0 200 200"></svg>
+          <div class="legend" id="donut-legend"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Failed units vs records</h3>
+        <p class="sub">Packout punches above its record count: 321 units from 36 records (8.9 per record) vs 4.5 for test config. </p>
+        <svg class="chart" id="units-chart" viewBox="0 0 560 240"></svg>
+        <p class="caption">Grouped columns: records vs failed units. Source: Working_Doc.xlsx.</p>
+      </div>
+    </div>
+
+    <h2>Manufacturing sites</h2>
+    <p class="sub">Foxconn is 284 of 366 records (77.6%), Flex 52 (14.2%), Fabrinet 30 (8.2%). FJZ alone is half the file.</p>
+    <div class="panel" style="margin-top:12px">
+      <div class="usage" id="oem-bar"></div>
+      <div class="usage-legend">
+        <span><i style="background:#4c8dff"></i>284 Foxconn</span>
+        <span><i style="background:#e0a84a"></i>52 Flex</span>
+        <span><i style="background:#9b7dff"></i>30 Fabrinet</span>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:20px">
+      <div class="panel">
+        <h3>Records by site</h3>
+        <div class="hbar" id="site-recs"></div>
+        <p class="caption">Site codes: FJZ/FTX/FVN/FVT/FOC/FOL Foxconn · FGU/FDO Flex · NCB Fabrinet.</p>
+      </div>
+      <div class="panel">
+        <h3>Failed units by site</h3>
+        <div class="hbar" id="site-units"></div>
+        <p class="caption">FDO is the outlier: 16 records, 218 failed units. FJZ still leads on volume.</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:28px">Code mix within each site</h3>
+    <p class="sub">100% stacked share so small sites are comparable to FJZ. Solder and contamination concentrate at FVN.</p>
+    <div class="panel" style="margin-top:12px">
+      <div class="stack-legend" id="stack-legend"></div>
+      <svg class="chart" id="stack-chart" viewBox="0 0 720 280"></svg>
+      <p class="caption">Share of records within each site (normalized). Source: Working_Doc.xlsx.</p>
+    </div>
+
+    <h3 style="margin-top:28px">Records by defect code and site</h3>
+    <div class="scroll" id="crosstab"></div>
+    <p class="caption">Source: Working_Doc.xlsx · 366 workmanship records.</p>
+
+    <h2>Site signatures worth presenting</h2>
+    <div class="sigs">
+      <div class="sig">
+        <h3>FVN — SMT, not test</h3>
+        <p>9 contamination + 7 solder of 28 records. This is the only larger site where test configuration is not the lead code.</p>
+      </div>
+      <div class="sig">
+        <h3>FVT — seating</h3>
+        <p>17 of 21 records are Re-Seat (Wi-Fi antenna, pluggable modules, LED cable). Almost no test-config or packout noise.</p>
+      </div>
+      <div class="sig">
+        <h3>FDO — units, not events</h3>
+        <p>16 records but 218 failed units. FA-case mix rather than the FJZ test-line pattern. Do not treat record count as customer impact here.</p>
+      </div>
+      <div class="sig">
+        <h3>FJZ — orientation ranks third</h3>
+        <p>Wrong orientation is 27 of 182 at FJZ, ahead of packout (13). Test config is still the bulk at 85.</p>
+      </div>
+    </div>
+
+    <h2>Assignment confidence</h2>
+    <p class="sub">Column D. High ≥90%, medium 70–89%, low &lt;70%. High-confidence rows are 283 of 366 (77.3%). 83 rows still have a 2nd failure code.</p>
+    <div class="grid-2" style="margin-top:12px">
+      <div class="panel">
+        <div class="donut-wrap">
+          <svg id="conf-donut" width="200" height="200" viewBox="0 0 200 200"></svg>
+          <div class="legend" id="conf-legend"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Confidence by code</h3>
+        <svg class="chart" id="conf-stack" viewBox="0 0 560 230"></svg>
+        <p class="caption">Packout is mostly medium (28 of 36). Damage keeps the most low-confidence share (5 of 20). Missing part and contamination are all high.</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:28px">Site rollup</h3>
+    <div class="scroll" id="rollup"></div>
+    <p class="caption">57 records had no failed-unit quantity; unit totals are a lower bound.</p>
+  </div>
+
+<script>
+const CODES = [
+  "Test Configuration","Re-Seat","Packout Error","Reverse/Wrong Orientation",
+  "Damage","Missing Component / Part","Contamination","Wrong SW","Solder",
+  "Wrong Component / Part","Open/Short Circuit (Non-Solder)","Cosmetic"
+];
+const SHORT = [
+  "Test config","Re-Seat","Packout","Wrong orientation","Damage","Missing part",
+  "Contamination","Wrong SW","Solder","Wrong part","Open/short","Cosmetic"
+];
+const COLORS = ["#4c8dff","#e0a84a","#3ecf8e","#9b7dff","#e15d67","#5ec2d4","#d98c5a","#7aa2ff","#c4d17a","#db6bcf","#8aa0b5","#a8b4c3"];
+const SITES = [
+  { name:"FJZ — Foxconn", short:"FJZ", oem:"Foxconn", records:182, units:957, byCode:[85, 30, 13, 27, 4, 12, 2, 3, 0, 5, 0, 1],
+    signature:"Volume site. Test config is 85 of 182 (46.7%). Re-Seat (30) and Wrong orientation (27) are next." },
+  { name:"FTX — Foxconn", short:"FTX", oem:"Foxconn", records:38, units:78, byCode:[21, 5, 7, 2, 1, 1, 0, 1, 0, 0, 0, 0],
+    signature:"Test config leads (21 of 38). Packout and Re-Seat are the next cluster." },
+  { name:"FGU — Flex", short:"FGU", oem:"Flex", records:36, units:113, byCode:[23, 3, 7, 1, 1, 0, 0, 0, 0, 1, 0, 0],
+    signature:"Test config leads (23 of 36). Packout and Re-Seat are the next cluster." },
+  { name:"NCB — Fabrinet", short:"NCB", oem:"Fabrinet", records:30, units:118, byCode:[14, 1, 7, 1, 1, 1, 0, 1, 1, 1, 2, 0],
+    signature:"Highest packout share among sites with 30+ records (7 of 30, 23.3%). Genealogy and process-control issues." },
+  { name:"FVN — Foxconn", short:"FVN", oem:"Foxconn", records:28, units:98, byCode:[5, 0, 0, 2, 3, 1, 9, 1, 7, 0, 0, 0],
+    signature:"SMT signature: contamination and solder are 16 of 28 records (57.1%) — unlike the test-heavy sites." },
+  { name:"FVT — Foxconn", short:"FVT", oem:"Foxconn", records:21, units:32, byCode:[0, 17, 1, 0, 1, 0, 2, 0, 0, 0, 0, 0],
+    signature:"Re-seat site. 17 of 21 records are modules or cables not seated flush." },
+  { name:"FDO — Flex", short:"FDO", oem:"Flex", records:16, units:218, byCode:[1, 1, 1, 1, 2, 2, 0, 3, 0, 0, 3, 2],
+    signature:"Fewest records among major sites, but 218 failed units (13.6 per record). Mixed FA-case codes." },
+  { name:"FOC — Foxconn", short:"FOC", oem:"Foxconn", records:14, units:8, byCode:[1, 0, 0, 0, 7, 0, 0, 3, 0, 0, 3, 0],
+    signature:"Damage-led mix (7 of 14). Wrong SW and Open/short next." },
+  { name:"FOL — Foxconn", short:"FOL", oem:"Foxconn", records:1, units:9, byCode:[0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+    signature:"Single solder/reflow record (capacitor leakage after excessive SMT profile)." }
+];
+const ALL_UNITS = 1631;
+
+const $ = (id) => document.getElementById(id);
+const sum = (a) => a.reduce((x,y)=>x+y,0);
+const pct = (n,d) => d ? ((100*n)/d).toFixed(1)+"%" : "—";
+const per = (u,r) => r ? (u/r).toFixed(1) : "—";
+
+function bars(el, labels, values, colorFn) {
+  const max = Math.max(...values, 1);
+  el.innerHTML = labels.map((lab,i) => {
+    const w = (100 * values[i] / max).toFixed(1);
+    const c = colorFn ? colorFn(i) : COLORS[i % COLORS.length];
+    return `<div class="hbar-row"><span title="${lab}">${lab}</span>
+      <div class="track"><div class="fill" style="width:${w}%;background:${c}"></div></div>
+      <b>${values[i]}</b></div>`;
+  }).join("");
+}
+
+function donut(svg, slices) {
+  const total = sum(slices.map(s=>s.value)) || 1;
+  const cx=100, cy=100, r=72, ir=44;
+  let a=-Math.PI/2, parts=[], legend=[];
+  slices.forEach(s => {
+    const da = 2*Math.PI*(s.value/total);
+    const a2 = a+da;
+    const large = da>Math.PI ? 1 : 0;
+    const p1x=cx+r*Math.cos(a), p1y=cy+r*Math.sin(a);
+    const p2x=cx+r*Math.cos(a2), p2y=cy+r*Math.sin(a2);
+    const i1x=cx+ir*Math.cos(a2), i1y=cy+ir*Math.sin(a2);
+    const i2x=cx+ir*Math.cos(a), i2y=cy+ir*Math.sin(a);
+    parts.push(`<path d="M${p1x},${p1y} A${r},${r} 0 ${large} 1 ${p2x},${p2y} L${i1x},${i1y} A${ir},${ir} 0 ${large} 0 ${i2x},${i2y} Z" fill="${s.color}"><title>${s.label}: ${s.value}</title></path>`);
+    legend.push(`<div><i class="swatch" style="background:${s.color}"></i>${s.label} <b>${s.value}</b> (${pct(s.value,total)})</div>`);
+    a=a2;
+  });
+  svg.innerHTML = parts.join("") + `<text x="100" y="96" text-anchor="middle" fill="#e8eef4" font-size="18" font-weight="650">${total}</text>
+    <text x="100" y="114" text-anchor="middle" fill="#93a1b3" font-size="10">records</text>`;
+  return legend.join("");
+}
+
+function grouped(svg, cats, series, colors) {
+  const W=560, H=240, L=48, R=16, T=16, B=48;
+  const iw=W-L-R, ih=H-T-B;
+  const max = Math.max(...series.flatMap(s=>s.data), 1);
+  const n = cats.length, g = iw/n, bw = g*0.32;
+  let html = `<line x1="${L}" y1="${T}" x2="${L}" y2="${T+ih}" stroke="#2a3442"/><line x1="${L}" y1="${T+ih}" x2="${L+iw}" y2="${T+ih}" stroke="#2a3442"/>`;
+  [0,0.5,1].forEach(t => {
+    const y = T+ih - t*ih;
+    html += `<text x="${L-6}" y="${y+3}" text-anchor="end" fill="#6d7b8d" font-size="10">${Math.round(max*t)}</text>`;
+  });
+  cats.forEach((c,i) => {
+    series.forEach((s,si) => {
+      const h = (s.data[i]/max)*ih;
+      const x = L + i*g + g*0.18 + si*(bw+4);
+      const y = T+ih-h;
+      html += `<rect x="${x}" y="${y}" width="${bw}" height="${h}" fill="${colors[si]}" rx="2"><title>${s.name} · ${c}: ${s.data[i]}</title></rect>`;
+    });
+    html += `<text x="${L+i*g+g/2}" y="${H-18}" text-anchor="middle" fill="#93a1b3" font-size="10">${c}</text>`;
+  });
+  html += series.map((s,i)=>`<rect x="${L+i*110}" y="${H-8}" width="8" height="8" fill="${colors[i]}" rx="1"/><text x="${L+i*110+12}" y="${H}" fill="#93a1b3" font-size="10">${s.name}</text>`).join("");
+  svg.innerHTML = html;
+}
+
+function stackedNorm(svg, cats, series, colors) {
+  const W=720, H=280, L=36, R=12, T=12, B=36;
+  const iw=W-L-R, ih=H-T-B, n=cats.length, bw=iw/n*0.62, gap=iw/n;
+  let html = `<line x1="${L}" y1="${T+ih}" x2="${L+iw}" y2="${T+ih}" stroke="#2a3442"/>`;
+  cats.forEach((c,i) => {
+    const total = sum(series.map(s=>s.data[i])) || 1;
+    let y = T;
+    series.forEach((s,si) => {
+      const h = (s.data[i]/total)*ih;
+      html += `<rect x="${L+i*gap+(gap-bw)/2}" y="${y}" width="${bw}" height="${h}" fill="${colors[si]}"><title>${c} · ${s.name}: ${s.data[i]} (${pct(s.data[i],total)})</title></rect>`;
+      y += h;
+    });
+    html += `<text x="${L+i*gap+gap/2}" y="${H-12}" text-anchor="middle" fill="#93a1b3" font-size="11">${c}</text>`;
+  });
+  svg.innerHTML = html;
+}
+
+function stackedAbs(svg, cats, series, colors) {
+  const W=560, H=230, L=36, R=12, T=12, B=40;
+  const iw=W-L-R, ih=H-T-B;
+  const max = Math.max(...cats.map((_,i)=>sum(series.map(s=>s.data[i]))), 1);
+  const n=cats.length, gap=iw/n, bw=gap*0.58;
+  let html = `<line x1="${L}" y1="${T+ih}" x2="${L+iw}" y2="${T+ih}" stroke="#2a3442"/>`;
+  cats.forEach((c,i) => {
+    let y = T+ih;
+    series.forEach((s,si) => {
+      const h = (s.data[i]/max)*ih;
+      y -= h;
+      html += `<rect x="${L+i*gap+(gap-bw)/2}" y="${y}" width="${bw}" height="${h}" fill="${colors[si]}"><title>${c} · ${s.name}: ${s.data[i]}</title></rect>`;
+    });
+    html += `<text x="${L+i*gap+gap/2}" y="${H-14}" text-anchor="middle" fill="#93a1b3" font-size="10">${c}</text>`;
+  });
+  html += series.map((s,i)=>`<rect x="${L+i*90}" y="${H-6}" width="8" height="8" fill="${colors[i]}" rx="1"/><text x="${L+i*90+12}" y="${H+2}" fill="#93a1b3" font-size="10">${s.name}</text>`).join("");
+  svg.innerHTML = html;
+}
+
+function table(el, headers, rows, left=1) {
+  const th = headers.map((h,i)=>`<th style="${i<left?'text-align:left':''}">${h}</th>`).join("");
+  const body = rows.map(r=>`<tr>${r.map((c,i)=>`<td style="${i<left?'text-align:left':''}">${c}</td>`).join("")}</tr>`).join("");
+  el.innerHTML = `<table><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table>`;
+}
+
+function checkedBoxes() {
+  return Array.from(document.querySelectorAll("#site-options input[type=checkbox]"));
+}
+
+function selectedSites() {
+  const picked = checkedBoxes()
+    .filter((box) => box.checked)
+    .map((box) => SITES.find((s) => s.name === box.value))
+    .filter(Boolean);
+  if (picked.length === 0) return SITES;
+  return picked;
+}
+
+function isFullSelection() {
+  const boxes = checkedBoxes();
+  const n = boxes.filter((box) => box.checked).length;
+  return n === 0 || n === SITES.length;
+}
+
+function setAllChecked(on) {
+  checkedBoxes().forEach((box) => { box.checked = on; });
+}
+
+function updateSiteButton() {
+  const boxes = checkedBoxes();
+  const picked = boxes.filter((box) => box.checked);
+  const btn = $("site-btn");
+  if (picked.length === 0 || picked.length === SITES.length) {
+    btn.textContent = "All sites";
+    return;
+  }
+  const shorts = picked.map((box) => {
+    const site = SITES.find((s) => s.name === box.value);
+    return site ? site.short : box.value;
+  });
+  if (shorts.length <= 3) {
+    btn.textContent = shorts.join(", ");
+    return;
+  }
+  btn.textContent = shorts.slice(0, 2).join(", ") + " +" + (shorts.length - 2);
+}
+
+function renderSiteCharts(sites) {
+  const fox = sum(sites.filter((s) => s.oem === "Foxconn").map((s) => s.records));
+  const flex = sum(sites.filter((s) => s.oem === "Flex").map((s) => s.records));
+  const fab = sum(sites.filter((s) => s.oem === "Fabrinet").map((s) => s.records));
+  const recTotal = sum(sites.map((s) => s.records)) || 1;
+  $("oem-bar").innerHTML =
+    `<i style="width:${(100*fox/recTotal).toFixed(1)}%;background:#4c8dff"></i>` +
+    `<i style="width:${(100*flex/recTotal).toFixed(1)}%;background:#e0a84a"></i>` +
+    `<i style="width:${(100*fab/recTotal).toFixed(1)}%;background:#9b7dff"></i>`;
+  const legend = $("oem-bar").nextElementSibling;
+  if (legend) {
+    legend.replaceChildren();
+    [
+      [fox, "#4c8dff", "Foxconn"],
+      [flex, "#e0a84a", "Flex"],
+      [fab, "#9b7dff", "Fabrinet"],
+    ].forEach(([n, color, label]) => {
+      const span = document.createElement("span");
+      const i = document.createElement("i");
+      i.style.background = color;
+      span.appendChild(i);
+      span.appendChild(document.createTextNode(n + " " + label));
+      legend.appendChild(span);
+    });
+  }
+
+  bars($("site-recs"), sites.map((s) => s.short), sites.map((s) => s.records), (i) => COLORS[i]);
+  bars($("site-units"), sites.map((s) => s.short), sites.map((s) => s.units), () => "#e0a84a");
+
+  const stackSeries = [
+    { name: "Test config", data: sites.map((s) => s.byCode[0]) },
+    { name: "Re-Seat", data: sites.map((s) => s.byCode[1]) },
+    { name: "Packout", data: sites.map((s) => s.byCode[2]) },
+    { name: "Solder / contamination", data: sites.map((s) => s.byCode[6] + s.byCode[8]) },
+    { name: "All other", data: sites.map((s) => s.records - s.byCode[0] - s.byCode[1] - s.byCode[2] - s.byCode[6] - s.byCode[8]) },
+  ];
+  const stackColors = ["#4c8dff", "#e0a84a", "#3ecf8e", "#d98c5a", "#7d8b9c"];
+  stackedNorm($("stack-chart"), sites.map((s) => s.short), stackSeries, stackColors);
+
+  const recSum = sum(sites.map((s) => s.records));
+  table($("crosstab"),
+    ["Defect code", ...sites.map((s) => s.short), "Total", "Share"],
+    CODES.map((c, i) => {
+      const row = sites.map((s) => s.byCode[i]);
+      const t = sum(row);
+      return [c, ...row.map((n) => n || "—"), t, pct(t, recSum)];
+    }));
+
+  table($("rollup"),
+    ["Site", "Partner", "Records", "Failed units", "Units / record", "Lead code", "Lead share"],
+    sites.map((s) => {
+      const lead = s.byCode.indexOf(Math.max(...s.byCode));
+      return [s.name, s.oem, s.records, s.units.toLocaleString(), per(s.units, s.records), CODES[lead], pct(s.byCode[lead], s.records)];
+    }));
+}
+
+function render() {
+  const sites = selectedSites();
+  const filtered = !isFullSelection();
+  const records = sum(sites.map((s) => s.records));
+  const units = sum(sites.map((s) => s.units));
+  const byCode = CODES.map((_, i) => sum(sites.map((s) => s.byCode[i])));
+  const top3 = byCode[0] + byCode[1] + byCode[2];
+  const partners = Array.from(new Set(sites.map((s) => s.oem)));
+  updateSiteButton();
+
+  $("kpis").innerHTML = `
+    <div class="kpi"><b>${records}</b><span>${filtered ? "Selected records" : "Records coded"}</span></div>
+    <div class="kpi"><b>${units.toLocaleString()}</b><span>Failed units (where reported)</span></div>
+    <div class="kpi"><b>${pct(top3, records)}</b><span>Test config + re-seat + packout</span></div>
+    <div class="kpi"><b>${filtered ? partners.length : 9}</b><span>${filtered ? partners.join(" · ") : "Manufacturing sites"}</span></div>`;
+
+  if (!filtered) {
+    $("callout").innerHTML = `<strong>Test configuration is 41% of the book</strong>Test Configuration is 150 records, Re-Seat 57, and Packout Error 36 — 243 of 366 (66.4%). Reverse/Wrong Orientation is a close fourth at 34.`;
+    $("mix-sub").textContent = "Record count by primary failure code across all sites.";
+  } else if (sites.length === 1) {
+    const sel = sites[0];
+    $("callout").innerHTML = `<strong></strong>`;
+    $("callout").querySelector("strong").textContent = sel.name;
+    $("callout").appendChild(document.createTextNode(
+      sel.signature + " Failed units: " + sel.units.toLocaleString() + " (" + per(sel.units, sel.records) + " per record)."
+    ));
+    $("mix-sub").textContent = "Record count by primary failure code at " + sel.short + ".";
+  } else {
+    const names = sites.map((s) => s.short).join(", ");
+    $("callout").innerHTML = `<strong></strong>`;
+    $("callout").querySelector("strong").textContent = names;
+    $("callout").appendChild(document.createTextNode(
+      sites.length + " sites selected · " + records + " records · " + units.toLocaleString() + " failed units (" + per(units, records) + " per record)."
+    ));
+    $("mix-sub").textContent = "Record count by primary failure code at " + names + ".";
+  }
+
+  bars($("code-bars"), SHORT, byCode);
+  const other = Math.max(sum(byCode) - byCode[0] - byCode[1] - byCode[2] - byCode[3], 0);
+  $("donut-legend").innerHTML = donut($("donut"), [
+    {label:"Test config", value:byCode[0], color:"#4c8dff"},
+    {label:"Re-Seat", value:byCode[1], color:"#e0a84a"},
+    {label:"Packout", value:byCode[2], color:"#3ecf8e"},
+    {label:"Wrong orientation", value:byCode[3], color:"#9b7dff"},
+    {label:"All other", value:other, color:"#7d8b9c"},
+  ]);
+  renderSiteCharts(sites);
+}
+
+(function init() {
+  const wrap = $("site-options");
+  SITES.forEach((s) => {
+    const lab = document.createElement("label");
+    lab.className = "site-opt";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.value = s.name;
+    cb.checked = true;
+    cb.addEventListener("change", render);
+    lab.appendChild(cb);
+    lab.appendChild(document.createTextNode(s.short + "  ·  " + s.records + " records"));
+    wrap.appendChild(lab);
+  });
+
+  const menu = $("site-menu");
+  const btn = $("site-btn");
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const open = menu.hidden;
+    menu.hidden = !open;
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  document.addEventListener("click", (e) => {
+    if (!$("site-dd").contains(e.target)) {
+      menu.hidden = true;
+      btn.setAttribute("aria-expanded", "false");
+    }
+  });
+  $("select-all").addEventListener("click", () => { setAllChecked(true); render(); });
+  $("clear").addEventListener("click", () => { setAllChecked(false); render(); });
+
+  grouped($("units-chart"),
+    ["Test config","Re-Seat","Packout","Orientation","Wrong SW"],
+    [{name:"Records", data:[150,57,36,34,12]}, {name:"Failed units", data:[669,227,321,173,95]}],
+    ["#4c8dff","#e0a84a"]);
+
+  const stackColors = ["#4c8dff","#e0a84a","#3ecf8e","#d98c5a","#7d8b9c"];
+  const stackNames = ["Test config","Re-Seat","Packout","Solder / contamination","All other"];
+  $("stack-legend").replaceChildren();
+  stackNames.forEach((name, i) => {
+    const span = document.createElement("span");
+    const sw = document.createElement("i");
+    sw.className = "swatch";
+    sw.style.background = stackColors[i];
+    span.appendChild(sw);
+    span.appendChild(document.createTextNode(name));
+    $("stack-legend").appendChild(span);
+  });
+
+  $("conf-legend").innerHTML = donut($("conf-donut"), [
+    {label:"High ≥90%", value:283, color:"#3ecf8e"},
+    {label:"Medium 70–89%", value:65, color:"#e0a84a"},
+    {label:"Low <70%", value:18, color:"#e15d67"},
+  ]);
+  stackedAbs($("conf-stack"),
+    ["Test config","Re-Seat","Packout","Orientation","Damage","Missing"],
+    [
+      {name:"High", data:[122,48,7,26,14,17]},
+      {name:"Medium", data:[23,6,28,7,1,0]},
+      {name:"Low", data:[5,3,1,1,5,0]},
+    ],
+    ["#3ecf8e","#e0a84a","#e15d67"]);
+
+  render();
+})();
+</script>
+</body>
+</html>
