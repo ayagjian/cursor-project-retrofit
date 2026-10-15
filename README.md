@@ -4,11 +4,11 @@ Private dashboard of factory workmanship defects, counted as **failed units** (n
 
 ## Open the dashboard
 
-Download or clone this folder, then open this file in Chrome, Edge, or Safari:
+Use the GitHub Pages link for this repository (see the repo description / About section). That opens the dashboard in a browser with no Cursor install.
 
-`defect-code-summary-2026-10-15.html`
+You can also download `index.html` (same as `defect-code-summary-2026-10-15.html`) and open it locally in Chrome, Edge, or Safari.
 
-Do not rely on Slack, Teams, or SharePoint previews — they often show a blank page. Open the file in a browser instead.
+Do not rely on Slack, Teams, GitHub file preview, or SharePoint previews — they often show a blank page.
 
 ## Source
 
