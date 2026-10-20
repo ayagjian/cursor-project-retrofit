@@ -6,7 +6,7 @@ Public dashboard of factory workmanship defects, counted as **failed units** (no
 
 https://ayagjian.github.io/cursor-project-retrofit/
 
-You can also download `index.html` (same as `defect-code-summary-2026-10-15.html`) and open it locally in Chrome, Edge, or Safari.
+You can also download `index.html` (same as `defect-code-summary-2026-10-20.html`) and open it locally in Chrome, Edge, or Safari.
 
 Do not rely on Slack, Teams, GitHub file preview, or SharePoint previews — they often show a blank page.
 
